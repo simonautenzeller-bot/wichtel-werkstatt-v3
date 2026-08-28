@@ -1,0 +1,2137 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Die Wichtel-Maschine</title>
+  <meta name="theme-color" content="#1f7a42">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Wichtel-o-mat">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="apple-touch-icon" href="./icon.svg">
+  <script>
+    // Set forest mode as default theme
+    const themeKey = "Die Wichtel-Maschine-theme-mode-v1";
+    const stored = localStorage.getItem(themeKey);
+    const theme = stored || "alt-green";
+    if (theme === "alt-green") {
+      document.documentElement.classList.add("alt-green-view");
+    } else if (theme === "inverted") {
+      document.documentElement.classList.add("inverted-view");
+    }
+    localStorage.setItem(themeKey, theme);
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@500;700;800&family=Source+Sans+3:wght@400;600;700&display=swap');
+
+    :root {
+      --bg-1: #e6f5e8;
+      --bg-2: #cfe9d5;
+      --paper: #fbfff9;
+      --surface: #edf3ee;
+      --ink: #102218;
+      --muted: #3f5a48;
+      --primary: #0f5a2b;
+      --primary-contrast: #ffffff;
+      --border: #b8d7bf;
+      --ok: #146537;
+      --warn: #8f1f2b;
+      --accent: #b3303e;
+      --gold: #caa34f;
+      --shadow: 0 12px 34px rgba(16, 60, 33, 0.15);
+      --radius: 16px;
+      --font-body: "Source Sans 3", "Segoe UI", "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+      --font-display: "Barlow", "Avenir Next", "Segoe UI", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      color: var(--ink);
+      background: var(--bg-1);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .page-shell {
+      width: min(920px, 100%);
+      position: relative;
+      z-index: 1;
+    }
+
+    .app-footer {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 0.78rem;
+      color: #617a6b;
+      letter-spacing: 0.02em;
+      opacity: 0.9;
+    }
+
+    .app-footer .copyright-mark {
+      font-size: 0.9em;
+      display: inline-block;
+      transform: translateY(-0.02em);
+    }
+
+    .dev-panel {
+      position: fixed;
+      inset: 0;
+      background: rgba(12, 27, 19, 0.54);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .dev-panel[hidden] {
+      display: none;
+    }
+
+    .dev-card {
+      width: min(700px, 100%);
+      background: #ffffff;
+      border: 1px solid #bdd6c2;
+      border-radius: 18px;
+      box-shadow: 0 24px 70px rgba(13, 41, 25, 0.24);
+      padding: 18px;
+    }
+
+    .dev-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .dev-title-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .dev-header h3 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(1.1rem, 2vw, 1.45rem);
+      color: var(--ink);
+    }
+
+    .dev-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: #1d5a38;
+      background: #e9f6ec;
+      border: 1px solid #b7d8bf;
+      font-family: var(--font-display);
+    }
+
+    .dev-layout {
+      display: grid;
+      gap: 12px;
+    }
+
+    .dev-section {
+      border: 1px solid #cfe1d4;
+      border-radius: 14px;
+      background: #f7fbf8;
+      overflow: hidden;
+    }
+
+    .dev-section-toggle {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 11px 12px;
+      user-select: none;
+    }
+
+    .dev-section-toggle::-webkit-details-marker {
+      display: none;
+    }
+
+    .dev-section-arrow {
+      color: #2a5d3e;
+      font-size: 0.85rem;
+      line-height: 1;
+      transition: transform 160ms ease;
+      transform: rotate(-90deg);
+    }
+
+    .dev-section[open] .dev-section-arrow {
+      transform: rotate(0deg);
+    }
+
+    .dev-section-body {
+      border-top: 1px solid #dbe9df;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .dev-section-title {
+      margin: 0;
+      font-size: 0.76rem;
+      color: #2a5d3e;
+      letter-spacing: 0.9px;
+      text-transform: uppercase;
+      font-weight: 800;
+      font-family: var(--font-display);
+    }
+
+    .dev-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .dev-grid textarea {
+      width: 100%;
+      min-height: 120px;
+      border: 1px solid #a8cdaf;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: white;
+      color: var(--ink);
+      resize: vertical;
+      font: inherit;
+    }
+
+    .dev-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .dev-inline-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dev-inline-actions button,
+    .dev-inline-actions .dev-link-action {
+      min-height: 34px;
+      padding: 7px 10px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+    }
+
+    .dev-link-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #1d5a38;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+      font-family: var(--font-display);
+      font-weight: 600;
+    }
+
+    .dev-link-action:hover,
+    .dev-link-action:focus-visible {
+      background: rgba(16, 82, 42, 0.05);
+      outline: none;
+    }
+
+    .dev-actions > button,
+    .dev-actions > .theme-mode-control {
+      width: 100%;
+    }
+
+    .dev-actions button {
+      width: auto;
+      min-height: 42px;
+      padding: 9px 12px;
+    }
+
+    .app {
+      width: min(920px, 100%);
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero {
+      padding: 26px 22px 16px;
+      background: #1f7a42;
+      border-bottom: 1px solid var(--border);
+      color: #f6fff8;
+    }
+
+    .hero-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .hero-utility {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+      line-height: 1.1;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .hero h1 {
+      letter-spacing: 0.2px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      max-width: 100%;
+    }
+
+    .hero h1 > span:last-child {
+      display: inline-block;
+      max-width: 100%;
+      line-height: 0.96;
+      letter-spacing: 0.02em;
+      margin-top: 2px;
+    }
+
+    .hero-kicker {
+      display: block;
+      margin: 0;
+      font-size: 0.53rem;
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(246, 255, 248, 0.84);
+      font-family: var(--font-display);
+      max-width: 100%;
+    }
+
+    .xmas-icon {
+      display: inline-block;
+      margin-right: 0.35em;
+      font-size: 0.95em;
+      transform: translateY(-0.02em);
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: #d8f2df;
+      max-width: 70ch;
+      font-size: 1.02rem;
+      line-height: 1.45;
+    }
+
+    .setup-meta {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .setup-meta p {
+      margin: 0;
+      padding: 10px 12px;
+      border: 1px solid #c9ddce;
+      border-radius: 12px;
+      background: #f7fbf8;
+      font-size: 0.95rem;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .setup-meta strong {
+      display: block;
+      margin-bottom: 2px;
+      color: #1a5d35;
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: 0.15px;
+    }
+
+    .dev-pairs {
+      margin-top: 12px;
+      border: 1px solid #cfe1d0;
+      border-radius: 12px;
+      background: #f8fbf8;
+      padding: 10px 12px;
+    }
+
+    .dev-pairs h4 {
+      margin: 0 0 8px;
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      color: #1d4e2f;
+      text-transform: uppercase;
+      letter-spacing: 0.55px;
+    }
+
+    .dev-pair-list {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .content {
+      padding: 20px;
+      display: grid;
+      gap: 18px;
+      background: var(--surface);
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+      animation: fade 180ms ease;
+    }
+
+    .card {
+      border: 1px solid #9fc5a8;
+      border-radius: 14px;
+      padding: 16px;
+      background: #ffffff;
+      box-shadow: 0 6px 16px rgba(18, 68, 37, 0.1);
+    }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    input,
+    select,
+    button {
+      font: inherit;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid #a8cdaf;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: white;
+      color: var(--ink);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .btn-row > button {
+      flex: 1 1 180px;
+      min-height: 38px;
+    }
+
+    button {
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: transform 0.08s ease, opacity 0.15s ease;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--primary-contrast);
+      font-family: var(--font-display);
+      font-weight: 600;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--primary);
+      border-color: var(--primary);
+      font-family: var(--font-display);
+      font-weight: 600;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .btn-tertiary {
+      background: #f4e4e7;
+      color: #6f1f2a;
+      border-color: #d8aab2;
+      font-family: var(--font-display);
+      font-weight: 600;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .status {
+      min-height: 1.4em;
+      font-weight: 600;
+    }
+
+    .status.ok {
+      color: var(--ok);
+    }
+
+    .status.warn {
+      color: var(--warn);
+    }
+
+    .reveal {
+      border-radius: 16px;
+      border: 2px solid #2f9154;
+      padding: 18px 16px 16px;
+      background: linear-gradient(180deg, #f9fff9 0%, #edf9f0 100%);
+      box-shadow: 0 12px 28px rgba(21, 92, 48, 0.14);
+      display: none;
+    }
+
+    #screenReveal .card {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #screenReveal .reveal-actions {
+      margin-top: auto;
+      padding-top: 14px;
+    }
+
+    .reveal.active {
+      display: block;
+      animation: fade 180ms ease;
+    }
+
+    .secret {
+      font-size: clamp(1.7rem, 3vw, 2.3rem);
+      font-weight: 800;
+      letter-spacing: 0.35px;
+      margin: 10px 0 12px;
+      color: #0f5a2b;
+      line-height: 1.2;
+      padding: 12px 10px;
+      border-radius: 12px;
+      background: #ffffff;
+      border: 1px solid #b9debf;
+      text-align: center;
+      box-shadow: inset 0 1px 0 rgba(15, 90, 43, 0.05);
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .flow-note {
+      margin-top: 6px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .step-title {
+      margin: 4px 0 0;
+      font-family: var(--font-display);
+      font-size: clamp(1.25rem, 2.2vw, 1.55rem);
+      line-height: 1.2;
+      letter-spacing: 0.3px;
+      font-weight: 800;
+    }
+
+    .step-sub {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.45;
+      max-width: 62ch;
+    }
+
+    .step-kicker {
+      margin: 0;
+      color: #2c6b42;
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #1d4e2f;
+      text-transform: uppercase;
+      letter-spacing: 0.55px;
+    }
+
+    .global-restart {
+      border: none;
+      background: transparent;
+      color: #edf7ef;
+      padding: 0;
+      min-height: auto;
+      border-radius: 0;
+      font-size: 0.82rem;
+      text-decoration: none;
+      text-underline-offset: 2px;
+      font-weight: 400;
+      font-family: var(--font-body);
+      text-transform: none;
+      letter-spacing: 0;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.9;
+    }
+
+    .global-restart:hover,
+    .global-restart:focus-visible {
+      color: #ffffff;
+      background: transparent;
+      text-decoration: underline;
+      outline: none;
+    }
+
+    .global-restart span {
+      font-size: 1.05rem;
+      line-height: 1;
+    }
+
+    .theme-mode-control {
+      display: grid;
+      gap: 6px;
+    }
+
+    .theme-mode-control label {
+      margin: 0;
+      font-size: 0.76rem;
+      color: #2a5d3e;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .theme-mode-select {
+      border: 1px solid #8db79a;
+      background: #f3faf4;
+      color: #1c4f32;
+      border-radius: 10px;
+      padding: 9px 11px;
+      font-size: 0.88rem;
+      min-height: 42px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    .theme-mode-select:hover,
+    .theme-mode-select:focus-visible {
+      background: #e7f4ea;
+      border-color: #6ca17d;
+      outline: none;
+    }
+
+    .btn-soft-danger {
+      background: #fff4f5;
+      color: #8f1f2b;
+      border-color: #e4b7bf;
+    }
+
+    .btn-soft-danger:hover,
+    .btn-soft-danger:focus-visible {
+      background: #ffecef;
+      border-color: #d7939f;
+      color: #7e1722;
+      outline: none;
+    }
+
+    html.inverted-view {
+      filter: invert(1) hue-rotate(180deg);
+      background: #0f1210;
+    }
+
+    html.alt-green-view body {
+      background: radial-gradient(circle at 20% 10%, #2f7a54 0%, #1b4f35 60%, #123726 100%);
+      color: #ebfaef;
+    }
+
+    html.alt-green-view .app {
+      background: #1c5137;
+      border-color: #4e8b68;
+      box-shadow: 0 16px 42px rgba(7, 29, 19, 0.42);
+    }
+
+    html.alt-green-view .hero {
+      background: #f8fff9;
+      color: #13412b;
+      border-bottom-color: #b7d9c0;
+    }
+
+    html.alt-green-view .hero-kicker {
+      color: rgba(17, 69, 45, 0.62);
+    }
+
+    html.alt-green-view .hero h1,
+    html.alt-green-view .subtitle {
+      color: #1b5035;
+    }
+
+    html.alt-green-view .global-restart {
+      color: #1e5a3c;
+    }
+
+    html.alt-green-view .global-restart:hover,
+    html.alt-green-view .global-restart:focus-visible {
+      color: #103522;
+    }
+
+    html.alt-green-view .content {
+      background: #255f41;
+    }
+
+    html.alt-green-view .card {
+      background: #2f6f4d;
+      border-color: #4f8f69;
+      box-shadow: 0 8px 20px rgba(7, 31, 18, 0.28);
+    }
+
+    html.alt-green-view .step-kicker,
+    html.alt-green-view .step-title,
+    html.alt-green-view .section-title {
+      color: #e8f8ec;
+    }
+
+    html.alt-green-view .step-sub,
+    html.alt-green-view .small,
+    html.alt-green-view .status,
+    html.alt-green-view .setup-meta p,
+    html.alt-green-view .done-list li,
+    html.alt-green-view .progress-row {
+      color: #e9f8ed;
+    }
+
+    html.alt-green-view .setup-meta strong {
+      color: #f4fff7;
+    }
+
+    html.alt-green-view .flow-note,
+    html.alt-green-view .app-footer {
+      color: #ddf2e3;
+    }
+
+    html.alt-green-view .status.ok {
+      color: #bfffd6;
+    }
+
+    html.alt-green-view .status.warn {
+      color: #ffd7dd;
+    }
+
+    html.alt-green-view .setup-meta p,
+    html.alt-green-view .done-list li,
+    html.alt-green-view .dev-pairs,
+    html.alt-green-view .hint-box {
+      background: #275f42;
+      border-color: #5d9b75;
+    }
+
+    html.alt-green-view input,
+    html.alt-green-view select,
+    html.alt-green-view .dev-grid textarea {
+      background: #f6fff8;
+      border-color: #8ebd9a;
+      color: #143f2b;
+    }
+
+    html.alt-green-view .person-choice {
+      background: #23553a;
+      border-color: #619c77;
+      color: #ebfaef;
+    }
+
+    html.alt-green-view .person-choice:hover {
+      background: #2c6747;
+      border-color: #8ac09d;
+    }
+
+    html.alt-green-view .btn-primary {
+      background: #ffffff;
+      color: #11452d;
+      border-color: #d7eadc;
+    }
+
+    html.alt-green-view .btn-secondary {
+      background: transparent;
+      color: #ffffff;
+      border-color: #d5efdf;
+    }
+
+    html.alt-green-view .btn-tertiary {
+      background: #f8e7ea;
+      color: #6f1f2a;
+      border-color: #d8aab2;
+    }
+
+    html.alt-green-view .reveal {
+      background: linear-gradient(180deg, #f5fff7 0%, #e6f8eb 100%);
+      border-color: #86c69d;
+    }
+
+    html.alt-green-view .secret {
+      color: #104327;
+      border-color: #9fcfae;
+      background: #ffffff;
+    }
+
+    html.alt-green-view #screenFinal .card {
+      border-color: #8fc9a6;
+      background: linear-gradient(160deg, #2d714f 0%, #245f42 55%, #1f533a 100%);
+      box-shadow: 0 16px 40px rgba(6, 27, 17, 0.42);
+    }
+
+    html.alt-green-view #screenFinal .step-kicker,
+    html.alt-green-view #screenFinal .step-title,
+    html.alt-green-view #screenFinal .step-sub {
+      color: #f1fff5;
+    }
+
+    html.alt-green-view #screenFinal .xmas-icon {
+      filter: drop-shadow(0 0 6px rgba(255, 232, 173, 0.8));
+    }
+
+    html.alt-green-view #screenFinal #restartBtn {
+      color: #11452d;
+      border-color: #d8eee1;
+      background: #f6fff8;
+    }
+
+    html.alt-green-view #screenFinal #restartBtn:hover,
+    html.alt-green-view #screenFinal #restartBtn:focus-visible {
+      color: #0d3924;
+      border-color: #ffffff;
+      background: #ffffff;
+      outline: none;
+    }
+
+    html.alt-green-view .external-test-link {
+      color: #eafff0;
+    }
+
+    html.alt-green-view .external-test-link:hover {
+      color: #ffffff;
+    }
+
+    html.alt-green-view .dev-panel {
+      background: rgba(7, 27, 17, 0.64);
+    }
+
+    html.alt-green-view .dev-card {
+      background: #f6fff8;
+      border-color: #8ec39f;
+      box-shadow: 0 24px 70px rgba(6, 27, 17, 0.45);
+      color: #15422d;
+    }
+
+    html.alt-green-view .dev-header h3,
+    html.alt-green-view .dev-grid label,
+    html.alt-green-view .dev-pairs h4,
+    html.alt-green-view .dev-pair-list,
+    html.alt-green-view #devSettingsStatus {
+      color: #15422d;
+    }
+
+    html.alt-green-view .dev-card .dev-pairs {
+      background: #edf8f0;
+      border-color: #9ecfaf;
+    }
+
+    html.alt-green-view .dev-section {
+      background: #edf8f0;
+      border-color: #a9d4b8;
+    }
+
+    html.alt-green-view .dev-section-arrow {
+      color: #1b4d33;
+    }
+
+    html.alt-green-view .dev-section-body {
+      border-top-color: #c3dfcc;
+    }
+
+    html.alt-green-view .dev-section-title,
+    html.alt-green-view .dev-badge {
+      color: #1b4d33;
+    }
+
+    html.alt-green-view .dev-badge {
+      background: #e4f4ea;
+      border-color: #9ecfaf;
+    }
+
+    html.alt-green-view .dev-panel .btn-secondary {
+      color: #1b4f34;
+      border-color: #6ea883;
+      background: #edf8f0;
+    }
+
+    html.alt-green-view .dev-panel .btn-secondary:hover,
+    html.alt-green-view .dev-panel .btn-secondary:focus-visible {
+      color: #123927;
+      border-color: #4f8d69;
+      background: #e1f2e7;
+    }
+
+    html.alt-green-view .dev-panel .btn-soft-danger {
+      color: #7a1f2a;
+      border-color: #dfb3bc;
+      background: #fff0f2;
+    }
+
+    html.alt-green-view .dev-panel .btn-soft-danger:hover,
+    html.alt-green-view .dev-panel .btn-soft-danger:focus-visible {
+      color: #651722;
+      border-color: #d38f9c;
+      background: #ffe6eb;
+    }
+
+    #screenFinal .card {
+      position: relative;
+      overflow: hidden;
+      border-color: #d8c18a;
+      border-width: 2px;
+      background: linear-gradient(160deg, #fffaf0 0%, #f9fcf3 55%, #eef8ee 100%);
+      box-shadow: 0 16px 40px rgba(202, 163, 79, 0.35);
+      text-align: center;
+      padding: 30px 20px;
+      z-index: 1;
+    }
+
+    #screenFinal .step-title {
+      font-size: clamp(1.6rem, 3.4vw, 2.2rem);
+      animation: final-pop 620ms ease;
+    }
+
+    #screenFinal .step-sub {
+      max-width: none;
+      font-size: 1.05rem;
+    }
+
+    #screenFinal .xmas-icon {
+      display: inline-block;
+      animation: final-star-glow 2.2s ease-in-out infinite;
+      filter: drop-shadow(0 0 6px rgba(202, 163, 79, 0.75));
+    }
+
+    #screenFinal .btn-row {
+      justify-content: center;
+    }
+
+    .final-bg-fall {
+      display: none;
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.9;
+    }
+
+    body.final-celebration .final-bg-fall {
+      display: block;
+    }
+
+    .final-bg-fall span {
+      position: absolute;
+      top: -14%;
+      font-size: 1.3rem;
+      opacity: 0;
+      animation: confetti-fall 4.8s linear infinite;
+      filter: drop-shadow(0 2px 6px rgba(255,255,255,0.35));
+    }
+
+    .final-bg-fall span:nth-child(1) { left: 6%; animation-delay: 0s; }
+    .final-bg-fall span:nth-child(2) { left: 20%; animation-delay: 0.4s; font-size: 1.1rem; }
+    .final-bg-fall span:nth-child(3) { left: 36%; animation-delay: 0.9s; }
+    .final-bg-fall span:nth-child(4) { left: 52%; animation-delay: 0.2s; font-size: 1.6rem; }
+    .final-bg-fall span:nth-child(5) { left: 68%; animation-delay: 1.3s; }
+    .final-bg-fall span:nth-child(6) { left: 80%; animation-delay: 0.6s; font-size: 1.2rem; }
+    .final-bg-fall span:nth-child(7) { left: 90%; animation-delay: 1.6s; }
+    .final-bg-fall span:nth-child(8) { left: 12%; animation-delay: 2s; font-size: 1.3rem; }
+    .final-bg-fall span:nth-child(9) { left: 28%; animation-delay: 2.3s; font-size: 1.1rem; }
+    .final-bg-fall span:nth-child(10) { left: 62%; animation-delay: 2.7s; font-size: 1.5rem; }
+    .final-bg-fall span:nth-child(11) { left: 74%; animation-delay: 3.1s; font-size: 1.2rem; }
+    .final-bg-fall span:nth-child(12) { left: 42%; animation-delay: 3.5s; }
+
+    @keyframes final-pop {
+      0% { opacity: 0; transform: scale(0.7); }
+      60% { opacity: 1; transform: scale(1.08); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes final-star-glow {
+      0%, 100% { transform: rotate(-8deg) scale(1); }
+      50% { transform: rotate(8deg) scale(1.18); }
+    }
+
+    @keyframes confetti-fall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+      10% { opacity: 0.9; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #screenFinal .step-title,
+      #screenFinal .xmas-icon,
+      .final-bg-fall span {
+        animation: none;
+      }
+    }
+
+    .progress-card {
+      margin-top: -4px;
+      padding: 10px 12px;
+    }
+
+    .external-test-link-row {
+      margin: 8px 4px 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+    }
+
+    .external-test-link {
+      font-size: 0.8rem;
+      color: #5b7865;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .external-test-link:hover {
+      color: #2f5f43;
+    }
+
+    .external-test-link[hidden] {
+      display: none;
+    }
+
+    .progress-wrap {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: #d7eadb;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: #2f9154;
+      transition: width 220ms ease;
+    }
+
+    .hint-box {
+      border: 1px dashed #9cc7a5;
+      background: #f6fdf5;
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .done-list {
+      margin: 6px 0 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .done-list li {
+      border: 1px solid #badbbc;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: #edf8ef;
+      font-size: 0.8rem;
+    }
+
+    .person-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .person-choice {
+      width: 100%;
+      min-height: 54px;
+      border-radius: 12px;
+      border: 1px solid #abd0b0;
+      background: #f7fcf8;
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 10px 12px;
+    }
+
+    .person-choice:hover {
+      background: #eefbf1;
+      border-color: #7fb390;
+    }
+
+    .progress-card .small {
+      font-size: 0.82rem;
+      margin-top: 4px;
+    }
+
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 520px) {
+      .hero,
+      .content {
+        padding: 16px;
+      }
+
+      .hero-top {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .hero h1 {
+        gap: 6px;
+      }
+
+      .hero h1 > span:last-child {
+        line-height: 0.98;
+        letter-spacing: 0.01em;
+      }
+
+      .hero-kicker {
+        letter-spacing: 0.1em;
+        font-size: 0.47rem;
+      }
+
+      .hero-utility {
+        justify-content: flex-start;
+      }
+
+      .external-test-link-row {
+        gap: 10px;
+      }
+
+      .card {
+        padding: 13px;
+      }
+    }
+
+    .app-brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      color: rgba(27, 80, 53, 0.7);
+      font-family: var(--font-display);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .app-brand-row span:last-child {
+      color: #caa34f;
+      letter-spacing: 0.08em;
+    }
+
+    .dev-menu-button {
+      width: 34px;
+      height: 30px;
+      display: inline-grid;
+      align-content: center;
+      justify-items: stretch;
+      gap: 4px;
+      padding: 6px 5px;
+      border: 1px solid rgba(27, 80, 53, 0.18);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.46);
+      cursor: pointer;
+    }
+
+    .dev-menu-button:hover,
+    .dev-menu-button:focus-visible {
+      border-color: rgba(27, 80, 53, 0.46);
+      background: rgba(255, 255, 255, 0.8);
+      outline: none;
+    }
+
+    .dev-menu-button span {
+      width: 100%;
+      height: 1.5px;
+      border-radius: 2px;
+      background: #1b5035;
+    }
+
+    /* App view test: keep the workflow intact while presenting it as a focused mobile app. */
+    body {
+      display: block;
+      padding: 0;
+      background: #173f2c;
+    }
+
+    .page-shell {
+      width: min(600px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      background: #255f41;
+      box-shadow: 0 0 0 1px rgba(216, 238, 225, 0.14), 0 0 42px rgba(5, 23, 14, 0.34);
+    }
+
+    .app {
+      width: 100%;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .hero {
+      padding: 16px 18px 14px;
+    }
+
+    .hero-top {
+      display: block;
+    }
+
+    .hero h1 {
+      gap: 7px;
+    }
+
+    .hero h1 > span:last-child {
+      line-height: 1;
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      font-size: 0.96rem;
+      line-height: 1.4;
+    }
+
+    .hero-utility {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(27, 80, 53, 0.14);
+    }
+
+    .content {
+      padding: 14px;
+      background: #255f41;
+    }
+
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(7, 31, 18, 0.2);
+    }
+
+    .app-footer {
+      margin: 0;
+      padding: 4px 18px 12px;
+      color: rgba(233, 248, 237, 0.72);
+      background: #255f41;
+    }
+
+    .external-test-link-row {
+      margin: 0;
+      padding: 0 18px 16px;
+      background: #255f41;
+    }
+
+    @media (min-width: 601px) {
+      body {
+        padding: 18px 0;
+      }
+
+      .page-shell {
+        min-height: calc(100vh - 36px);
+        border-radius: 18px;
+        overflow: hidden;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <main class="app" aria-live="polite">
+      <header class="hero">
+        <div class="app-brand-row" aria-label="App-Information">
+          <span>Aubenziller Wichtel Werkstatt präsentiert:</span>
+          <button id="showDevLink" class="dev-menu-button" type="button" aria-label="Dev-Modus öffnen" title="Dev-Modus">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+        <div class="hero-top">
+          <h1>
+            <span><span class="xmas-icon" aria-hidden="true">🎄</span>Die Wichtel-Maschine</span>
+          </h1>
+        </div>
+      <p class="subtitle">Wir wichteln gemeinsam. Die <strong>Wichtel-Maschine</strong> übernimmt die Auslosung direkt auf dem Handy. Jede Person sieht nur ihren eigenen Wichtel.</p>
+      <div class="hero-utility">
+        <button id="globalRestartBtn" class="global-restart" type="button"><span aria-hidden="true">↺</span> Neue Runde starten</button>
+      </div>
+    </header>
+
+    <section class="content">
+      <section id="screenStart" class="screen active">
+        <article class="card">
+          <p class="step-kicker">Schritt 1</p>
+          <h2 class="step-title"><span class="xmas-icon" aria-hidden="true">🎁</span>Neue Auslosung starten</h2>
+          <div class="setup-meta" aria-label="Gruppeninfo">
+            <p id="startPeopleList"><strong>Teilnehmende:</strong> </p>
+            <p id="startBlockedPairsList"><strong>Nicht erlaubt:</strong> </p>
+          </div>
+          <div class="btn-row">
+            <button id="drawBtn" class="btn-primary" type="button">Auslosung starten</button>
+          </div>
+          <p id="drawStatus" class="status"></p>
+        </article>
+      </section>
+
+      <section id="screenDraw" class="screen">
+        <article class="card">
+          <p class="step-kicker">Schritt 2</p>
+          <h2 class="step-title"><span class="xmas-icon" aria-hidden="true">✨</span>Wer bist du?</h2>
+          <p class="step-sub">Wähle deinen Namen. Danach erscheint dein Wichtel auf einem separaten Bildschirm.</p>
+
+          <div id="personGrid" class="person-grid" aria-label="Namen auswählen"></div>
+
+          <div class="progress-wrap" style="margin-top:12px;">
+            <div class="progress-row">
+              <span id="remainingText">Noch 6 Personen offen</span>
+              <span id="progressText">0/6</span>
+            </div>
+            <div class="progress-track">
+              <div id="progressFill" class="progress-fill"></div>
+            </div>
+          </div>
+
+          <p id="revealStatus" class="status"></p>
+        </article>
+      </section>
+
+      <section id="screenReveal" class="screen">
+        <article class="card">
+          <p class="step-kicker">Schritt 2</p>
+          <h2 class="step-title"><span class="xmas-icon" aria-hidden="true">🎅</span>Dein Wichtel</h2>
+
+          <div id="revealBox" class="reveal active" role="status" aria-live="assertive" style="margin-top:12px;">
+            <div class="small">Du beschenkst:</div>
+            <div id="secretName" class="secret"></div>
+          </div>
+
+          <p id="revealScreenStatus" class="status"></p>
+
+          <div class="btn-row reveal-actions">
+            <button id="nextBtn" class="btn-primary" type="button">Handy weitergeben</button>
+          </div>
+        </article>
+      </section>
+
+      <section id="screenHandover" class="screen">
+        <article class="card">
+          <p class="step-kicker">Schritt 3</p>
+          <h2 class="step-title"><span class="xmas-icon" aria-hidden="true">📱</span>Handy weitergeben</h2>
+          <p class="step-sub">Perfekt. Das Ergebnis ist verborgen. Gib jetzt das Handy an die nächste Person.</p>
+          <div class="btn-row" style="margin-top:12px;">
+            <button id="continueBtn" class="btn-primary" type="button">Nächste Person starten</button>
+          </div>
+        </article>
+      </section>
+
+      <section id="screenFinal" class="screen">
+        <article class="card">
+          <p class="step-kicker">Fertig</p>
+          <h2 class="step-title"><span class="xmas-icon" aria-hidden="true">⭐</span>Ihr seid bereit fürs Wichteln</h2>
+          <p class="step-sub">Alle Namen sind verteilt. Frohe Weihnachten.</p>
+          <div class="btn-row" style="margin-top:12px;">
+            <button id="restartBtn" class="btn-secondary" type="button">Neue Runde starten</button>
+          </div>
+        </article>
+      </section>
+
+    </section>
+
+    </main>
+    <footer class="app-footer" aria-label="Copyright"><span class="copyright-mark">©</span> Aubenziller Wichtel Werkstatt 2026</footer>
+  </div>
+
+  <div class="final-bg-fall" aria-hidden="true">
+    <span>🎉</span><span>❄️</span><span>🎄</span><span>⭐</span><span>🎁</span><span>✨</span><span>🎉</span><span>❄️</span><span>🎄</span><span>⭐</span><span>✨</span><span>🎁</span>
+  </div>
+
+  <div id="devPanel" class="dev-panel" hidden>
+    <div class="dev-card" role="dialog" aria-modal="true" aria-labelledby="devTitle">
+      <div class="dev-header">
+        <div class="dev-title-wrap">
+          <h3 id="devTitle">Einstellungen</h3>
+        </div>
+        <button id="closeDevBtn" class="btn-secondary" type="button">Schließen</button>
+      </div>
+
+      <div class="dev-layout">
+        <details class="dev-section dev-accordion">
+          <summary class="dev-section-toggle">
+            <span class="dev-section-title">Schnellzugriff</span>
+            <span class="dev-section-arrow" aria-hidden="true">▾</span>
+          </summary>
+          <div class="dev-section-body">
+            <div class="dev-actions">
+              <div class="theme-mode-control">
+                <label for="themeModeSelect">Design-Modus</label>
+                <select id="themeModeSelect" class="theme-mode-select">
+                  <option value="default">Klassisch</option>
+                  <option value="inverted">Negativ</option>
+                  <option value="alt-green">Forest</option>
+                </select>
+              </div>
+              <div class="dev-inline-actions">
+                <button id="saveDevSettingsBtn" class="btn-primary" type="button">Speichern</button>
+                <button id="showFinalBtn" class="btn-secondary" type="button">Final zeigen</button>
+                <button id="resetDevSettingsBtn" class="btn-soft-danger" type="button">Zurücksetzen</button>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="dev-section dev-accordion">
+          <summary class="dev-section-toggle">
+            <span class="dev-section-title">Auslosungsdaten</span>
+            <span class="dev-section-arrow" aria-hidden="true">▾</span>
+          </summary>
+          <div class="dev-section-body">
+            <div class="dev-grid">
+              <div>
+                <label for="devPeopleInput">Teilnehmende (pro Zeile)</label>
+                <textarea id="devPeopleInput"></textarea>
+              </div>
+
+              <div>
+                <label for="devBlockedInput">Nicht erlaubt (eine Paarung pro Zeile, z. B. Anna | Ben)</label>
+                <textarea id="devBlockedInput"></textarea>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <details class="dev-section dev-accordion">
+          <summary class="dev-section-toggle">
+            <span class="dev-section-title">Letzte Auslosung</span>
+            <span class="dev-section-arrow" aria-hidden="true">▾</span>
+          </summary>
+          <div class="dev-section-body">
+            <div class="dev-pairs">
+              <ul id="devPairList" class="dev-pair-list"></ul>
+            </div>
+            <p id="devSettingsStatus" class="status"></p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const defaultPeople = [
+        "Simon",
+        "Anna-Lena",
+        "Robert",
+        "Liane",
+        "Sebastian",
+        "Lydia"
+      ];
+
+      const defaultBlockedPairs = [
+        pairKey("Simon", "Anna-Lena"),
+        pairKey("Robert", "Liane"),
+        pairKey("Sebastian", "Lydia")
+      ];
+
+      const STORAGE_KEY = "Die Wichtel-Maschine-settings-v1";
+      const INVERT_VIEW_KEY = "Die Wichtel-Maschine-invert-view-v1";
+      const THEME_MODE_KEY = "Die Wichtel-Maschine-theme-mode-v1";
+
+      const initialSettings = loadStoredSettings();
+      let people = initialSettings.people.length ? [...initialSettings.people] : [...defaultPeople];
+      let blockedPairs = new Set(initialSettings.blockedPairs.length ? initialSettings.blockedPairs : [...defaultBlockedPairs]);
+
+      const state = {
+        assignments: null,
+        shown: new Set(),
+        lastViewedPerson: "",
+        lastCompletedAssignments: []
+      };
+
+      const screenStart = document.getElementById("screenStart");
+      const screenDraw = document.getElementById("screenDraw");
+      const screenReveal = document.getElementById("screenReveal");
+      const screenHandover = document.getElementById("screenHandover");
+      const screenFinal = document.getElementById("screenFinal");
+      const appRoot = document.querySelector(".app");
+      const personGrid = document.getElementById("personGrid");
+      const drawBtn = document.getElementById("drawBtn");
+      const themeModeSelect = document.getElementById("themeModeSelect");
+      const globalRestartBtn = document.getElementById("globalRestartBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const continueBtn = document.getElementById("continueBtn");
+      const restartBtn = document.getElementById("restartBtn");
+      const drawStatus = document.getElementById("drawStatus");
+      const revealStatus = document.getElementById("revealStatus");
+      const revealScreenStatus = document.getElementById("revealScreenStatus");
+      const revealBox = document.getElementById("revealBox");
+      const secretName = document.getElementById("secretName");
+      const doneList = document.getElementById("doneList");
+      const remainingText = document.getElementById("remainingText");
+      const progressText = document.getElementById("progressText");
+      const progressFill = document.getElementById("progressFill");
+      const startPeopleList = document.getElementById("startPeopleList");
+      const startBlockedPairsList = document.getElementById("startBlockedPairsList");
+      const showFinalBtn = document.getElementById("showFinalBtn");
+      const showDevLink = document.getElementById("showDevLink");
+      const devPanel = document.getElementById("devPanel");
+      const devPeopleInput = document.getElementById("devPeopleInput");
+      const devBlockedInput = document.getElementById("devBlockedInput");
+      const devPairList = document.getElementById("devPairList");
+      const saveDevSettingsBtn = document.getElementById("saveDevSettingsBtn");
+      const resetDevSettingsBtn = document.getElementById("resetDevSettingsBtn");
+      const closeDevBtn = document.getElementById("closeDevBtn");
+      const devSettingsStatus = document.getElementById("devSettingsStatus");
+      init();
+
+      function init() {
+        renderPersonButtons();
+
+        setupDevAccordion();
+        themeModeSelect.addEventListener("change", handleThemeModeChange);
+        drawBtn.addEventListener("click", handleDraw);
+        globalRestartBtn.addEventListener("click", handleReset);
+        nextBtn.addEventListener("click", handleNextPerson);
+        continueBtn.addEventListener("click", handleContinue);
+        restartBtn.addEventListener("click", handleReset);
+        showFinalBtn.addEventListener("click", handleShowFinal);
+        showDevLink.addEventListener("click", handleShowDev);
+        saveDevSettingsBtn.addEventListener("click", handleSaveDevSettings);
+        resetDevSettingsBtn.addEventListener("click", handleResetDevSettings);
+        closeDevBtn.addEventListener("click", () => hideDevPanel());
+        applyStoredThemeMode();
+        loadDevPanelValues();
+        updateStartScreenMeta();
+        updateProgressUI();
+      }
+
+      function setupDevAccordion() {
+        const sections = Array.from(devPanel.querySelectorAll(".dev-accordion"));
+
+        for (const section of sections) {
+          section.addEventListener("toggle", () => {
+            if (!section.open) {
+              return;
+            }
+
+            for (const other of sections) {
+              if (other !== section) {
+                other.open = false;
+              }
+            }
+          });
+        }
+      }
+
+      function handleThemeModeChange() {
+        applyThemeMode(themeModeSelect.value);
+      }
+
+      function applyStoredThemeMode() {
+        const storedMode = localStorage.getItem(THEME_MODE_KEY);
+        if (storedMode) {
+          applyThemeMode(storedMode);
+          return;
+        }
+
+        // Set Forest mode as default and save it
+        localStorage.setItem(THEME_MODE_KEY, "alt-green");
+        applyThemeMode("alt-green");
+      }
+
+      function applyThemeMode(mode) {
+        const normalizedMode = ["default", "inverted", "alt-green"].includes(mode)
+          ? mode
+          : "default";
+
+        document.documentElement.classList.toggle("inverted-view", normalizedMode === "inverted");
+        document.documentElement.classList.toggle("alt-green-view", normalizedMode === "alt-green");
+
+        themeModeSelect.value = normalizedMode;
+        localStorage.setItem(THEME_MODE_KEY, normalizedMode);
+        localStorage.setItem(INVERT_VIEW_KEY, normalizedMode === "inverted" ? "1" : "0");
+      }
+
+      function handleShowFinal(event) {
+        if (event && typeof event.preventDefault === "function") {
+          event.preventDefault();
+        }
+        hideDevPanel();
+        hideSecret();
+        showScreen("final");
+      }
+
+      function handleShowDev(event) {
+        event.preventDefault();
+        loadDevPanelValues();
+        updateDevPairList();
+        devPanel.hidden = false;
+      }
+
+      function hideDevPanel() {
+        devPanel.hidden = true;
+        setStatus(devSettingsStatus, "", "");
+      }
+
+      function handleDraw() {
+        const result = generateAssignments(people, blockedPairs);
+
+        if (!result) {
+          setStatus(drawStatus, "Das hat gerade nicht geklappt. Bitte noch einmal starten.", "warn");
+          return;
+        }
+
+        state.assignments = result;
+        state.shown.clear();
+        state.lastViewedPerson = "";
+        state.lastCompletedAssignments = Array.from(result.entries())
+          .map(([giver, receiver]) => ({ giver, receiver }))
+          .sort((a, b) => a.giver.localeCompare(b.giver, "de"));
+
+        hideSecret();
+        renderPersonButtons();
+        setStatus(revealStatus, "", "");
+        renderDoneList();
+        updateDevPairList();
+        setStatus(drawStatus, "Auslosung ist bereit.", "ok");
+        updateProgressUI();
+        updateNextBtnLabel();
+        showScreen("draw");
+      }
+
+      function handleReset() {
+        state.assignments = null;
+        state.shown.clear();
+        state.lastViewedPerson = "";
+        state.lastCompletedAssignments = [];
+
+        hideSecret();
+        renderPersonButtons();
+        setStatus(drawStatus, "Alles ist wieder auf Anfang.", "ok");
+        setStatus(revealStatus, "", "");
+        renderDoneList();
+        updateDevPairList();
+        updateProgressUI();
+        updateNextBtnLabel();
+        showScreen("start");
+      }
+
+      function handleReveal(person) {
+        if (!state.assignments) {
+          setStatus(revealStatus, "Bitte zuerst mit der Auslosung starten.", "warn");
+          showScreen("start");
+          return;
+        }
+
+        if (!person) {
+          setStatus(revealStatus, "Bitte wähle zuerst deinen Namen.", "warn");
+          return;
+        }
+
+        if (state.shown.has(person)) {
+          setStatus(revealStatus, "Du hast deinen Wichtel schon gesehen.", "warn");
+          return;
+        }
+
+        const target = state.assignments.get(person);
+        if (!target) {
+          setStatus(revealStatus, "Hier ist etwas schiefgelaufen. Bitte neu starten.", "warn");
+          return;
+        }
+
+        secretName.textContent = target;
+        revealBox.classList.add("active");
+        revealBox.scrollIntoView({ behavior: "smooth", block: "center" });
+        setStatus(revealStatus, "Nur kurz für dich sichtbar. Merk dir den Namen und gib dann das Handy weiter.", "ok");
+        setStatus(revealScreenStatus, "Nur kurz für dich sichtbar. Merk dir den Namen und gib dann das Handy weiter.", "ok");
+
+        state.shown.add(person);
+        state.lastViewedPerson = person;
+        renderDoneList();
+        renderPersonButtons();
+        updateProgressUI();
+        updateNextBtnLabel();
+        showScreen("reveal");
+      }
+
+      function updateNextBtnLabel() {
+        const isLastReveal = state.shown.size >= getEffectivePeople().length;
+        nextBtn.textContent = isLastReveal ? "Wichteln abschließen 🎉" : "Handy weitergeben";
+      }
+
+      function hideSecret() {
+        revealBox.classList.remove("active");
+        secretName.textContent = "";
+        setStatus(revealScreenStatus, "", "");
+        updateProgressUI();
+
+        if (state.assignments && state.lastViewedPerson) {
+          showScreen("draw");
+        }
+      }
+
+      function handleNextPerson() {
+        if (!state.lastViewedPerson) {
+          setStatus(revealStatus, "Bitte zuerst den Wichtel anzeigen.", "warn");
+          return;
+        }
+
+        const activePeople = getEffectivePeople();
+        hideSecret();
+        state.lastViewedPerson = "";
+
+        if (state.shown.size >= activePeople.length) {
+          updateProgressUI();
+          showScreen("final");
+          return;
+        }
+
+        showScreen("handover");
+      }
+
+      function handleContinue() {
+        state.lastViewedPerson = "";
+        hideSecret();
+        renderPersonButtons();
+        setStatus(revealStatus, "Nächste Person ist dran.", "ok");
+        showScreen("draw");
+      }
+
+      function renderPersonButtons() {
+        personGrid.innerHTML = "";
+
+        const remainingPeople = people
+          .filter((person) => !state.shown.has(person))
+          .sort((a, b) => a.localeCompare(b, "de"));
+
+        for (const person of remainingPeople) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "person-choice";
+          button.textContent = person;
+          button.addEventListener("click", () => handleReveal(person));
+          personGrid.appendChild(button);
+        }
+
+        if (remainingPeople.length === 0) {
+          const empty = document.createElement("p");
+          empty.className = "small";
+          empty.textContent = "Alle Namen sind bereits verteilt.";
+          personGrid.appendChild(empty);
+        }
+      }
+
+      function loadStoredSettings() {
+        const fallback = {
+          people: [...defaultPeople],
+          blockedPairs: [...defaultBlockedPairs]
+        };
+
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) {
+            return fallback;
+          }
+
+          const parsed = JSON.parse(raw);
+          const peopleList = Array.isArray(parsed?.people) ? parsed.people : fallback.people;
+          const blockedList = Array.isArray(parsed?.blockedPairs) ? parsed.blockedPairs : fallback.blockedPairs;
+          const normalizedPeople = peopleList.map(normalizeName).filter(Boolean);
+          const normalizedBlocked = blockedList.filter((pair) => typeof pair === "string" && pair.trim());
+
+          return {
+            people: normalizedPeople.length ? normalizedPeople : fallback.people,
+            blockedPairs: normalizedBlocked.length ? normalizedBlocked : fallback.blockedPairs
+          };
+        } catch (error) {
+          return fallback;
+        }
+      }
+
+      function saveSettingsToStorage() {
+        const payload = {
+          people: getEffectivePeople().map(normalizeName).filter(Boolean),
+          blockedPairs: [...getEffectiveBlockedPairs()]
+        };
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      }
+
+      function updateDevPairList() {
+        devPairList.innerHTML = "";
+
+        if (!state.lastCompletedAssignments.length) {
+          const li = document.createElement("li");
+          li.textContent = "Noch keine abgeschlossene Auslosung vorhanden.";
+          devPairList.appendChild(li);
+          return;
+        }
+
+        for (const pair of state.lastCompletedAssignments) {
+          const li = document.createElement("li");
+          li.textContent = pair.giver + " → " + pair.receiver;
+          devPairList.appendChild(li);
+        }
+      }
+
+      function getEffectivePeople() {
+        const active = people.length ? people : [...defaultPeople];
+        return active.map(normalizeName).filter(Boolean);
+      }
+
+      function getEffectiveBlockedPairs() {
+        const active = blockedPairs.size ? [...blockedPairs] : [...defaultBlockedPairs];
+        return active.filter((pair) => typeof pair === "string" && pair.trim());
+      }
+
+      function normalizeName(value) {
+        return String(value || "").trim();
+      }
+
+      function loadDevPanelValues() {
+        devPeopleInput.value = people.join("\n");
+        devBlockedInput.value = [...blockedPairs].map((pair) => pair.replace("::", " | ")).join("\n");
+      }
+
+      function updateStartScreenMeta() {
+        const activePeople = getEffectivePeople();
+        const activeBlocked = getEffectiveBlockedPairs();
+        const peopleText = activePeople.length ? activePeople.join(", ") : "Keine Teilnehmenden";
+        const blockedText = activeBlocked.length
+          ? activeBlocked.map((pair) => pair.split("::").join(" ↔ ")).join(", ")
+          : "Keine";
+
+        startPeopleList.innerHTML = "<strong>Teilnehmende:</strong> " + peopleText;
+        startBlockedPairsList.innerHTML = "<strong>Nicht erlaubt:</strong> " + blockedText;
+      }
+
+      function handleSaveDevSettings() {
+        const parsedPeople = parsePeopleInput(devPeopleInput.value);
+        const parsedBlockedPairs = parseBlockedPairsInput(devBlockedInput.value);
+
+        if (!parsedPeople.length) {
+          setStatus(devSettingsStatus, "Bitte mindestens einen Namen eintragen.", "warn");
+          return;
+        }
+
+        people = parsedPeople;
+        blockedPairs = new Set(parsedBlockedPairs);
+        saveSettingsToStorage();
+
+        state.assignments = null;
+        state.shown.clear();
+        state.lastViewedPerson = "";
+        state.lastCompletedAssignments = [];
+        hideSecret();
+        renderPersonButtons();
+        updateStartScreenMeta();
+        updateDevPairList();
+        setStatus(drawStatus, "Einstellungen gespeichert. Die neue Konfiguration ist aktiv.", "ok");
+        setStatus(revealStatus, "", "");
+        updateProgressUI();
+        showScreen("start");
+        hideDevPanel();
+      }
+
+      function handleResetDevSettings() {
+        people = [...defaultPeople];
+        blockedPairs = new Set([...defaultBlockedPairs]);
+        saveSettingsToStorage();
+        loadDevPanelValues();
+        state.assignments = null;
+        state.shown.clear();
+        state.lastViewedPerson = "";
+        state.lastCompletedAssignments = [];
+        hideSecret();
+        renderPersonButtons();
+        updateStartScreenMeta();
+        updateDevPairList();
+        setStatus(drawStatus, "Standard-Einstellungen wurden wiederhergestellt.", "ok");
+        setStatus(revealStatus, "", "");
+        updateProgressUI();
+        showScreen("start");
+      }
+
+      function parsePeopleInput(raw) {
+        const seen = new Set();
+        const list = [];
+
+        for (const entry of raw.split(/\n|,/)) {
+          const name = normalizeName(entry);
+          if (!name || seen.has(name)) {
+            continue;
+          }
+          seen.add(name);
+          list.push(name);
+        }
+
+        return list;
+      }
+
+      function parseBlockedPairsInput(raw) {
+        const seen = new Set();
+        const list = [];
+
+        for (const entry of raw.split(/\n|;/)) {
+          const cleaned = normalizeName(entry).replace(/\s*\|\s*/g, "|");
+          if (!cleaned || !cleaned.includes("|")) {
+            continue;
+          }
+
+          const [left, right] = cleaned.split("|").map(normalizeName);
+          if (!left || !right || left === right) {
+            continue;
+          }
+
+          const key = pairKey(left, right);
+          if (seen.has(key)) {
+            continue;
+          }
+
+          seen.add(key);
+          list.push(key);
+        }
+
+        return list;
+      }
+
+      function setStatus(element, message, tone) {
+        element.textContent = message;
+        element.classList.remove("ok", "warn");
+
+        if (tone === "ok" || tone === "warn") {
+          element.classList.add(tone);
+        }
+      }
+
+      function updateProgressUI() {
+        const done = state.shown.size;
+        const total = Math.max(people.length, 1);
+        const remaining = Math.max(total - done, 0);
+        const percent = Math.round((done / total) * 100);
+
+        progressFill.style.width = percent + "%";
+        progressText.textContent = done + "/" + total;
+        remainingText.textContent = "Noch " + remaining + " Personen offen";
+      }
+
+      function showScreen(screen) {
+        screenStart.classList.remove("active");
+        screenDraw.classList.remove("active");
+        screenReveal.classList.remove("active");
+        screenHandover.classList.remove("active");
+        screenFinal.classList.remove("active");
+        document.body.classList.toggle("final-celebration", screen === "final");
+
+        if (screen === "start") {
+          screenStart.classList.add("active");
+          return;
+        }
+
+        if (screen === "draw") {
+          screenDraw.classList.add("active");
+          return;
+        }
+
+        if (screen === "reveal") {
+          screenReveal.classList.add("active");
+          return;
+        }
+
+        if (screen === "handover") {
+          screenHandover.classList.add("active");
+          return;
+        }
+
+        if (screen === "final") {
+          screenFinal.classList.add("active");
+        }
+      }
+
+      function renderDoneList() {
+        if (!doneList) {
+          return;
+        }
+
+        doneList.innerHTML = "";
+
+        if (state.shown.size === 0) {
+          const li = document.createElement("li");
+          li.textContent = "Noch niemand";
+          doneList.appendChild(li);
+          return;
+        }
+
+        for (const name of state.shown) {
+          const li = document.createElement("li");
+          li.textContent = name;
+          doneList.appendChild(li);
+        }
+      }
+
+      function pairKey(a, b) {
+        return [a, b].sort().join("::");
+      }
+
+      function isBlocked(giver, receiver, blockedSet) {
+        if (giver === receiver) {
+          return true;
+        }
+
+        return blockedSet.has(pairKey(giver, receiver));
+      }
+
+      function generateAssignments(list, blockedSet) {
+        const maxAttempts = 5000;
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          const receivers = shuffleSecure([...list]);
+          let valid = true;
+
+          for (let i = 0; i < list.length; i++) {
+            if (isBlocked(list[i], receivers[i], blockedSet)) {
+              valid = false;
+              break;
+            }
+          }
+
+          if (!valid) {
+            continue;
+          }
+
+          const map = new Map();
+          for (let i = 0; i < list.length; i++) {
+            map.set(list[i], receivers[i]);
+          }
+          return map;
+        }
+
+        return null;
+      }
+
+      function shuffleSecure(arr) {
+        const hasCrypto = typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function";
+
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = hasCrypto ? secureRandomInt(i + 1) : Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+
+        return arr;
+      }
+
+      function secureRandomInt(max) {
+        const uint32 = new Uint32Array(1);
+        const limit = Math.floor(0xffffffff / max) * max;
+
+        let random;
+        do {
+          crypto.getRandomValues(uint32);
+          random = uint32[0];
+        } while (random >= limit);
+
+        return random % max;
+      }
+
+      // Only register service worker in secure environments (HTTPS or localhost)
+      if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js").catch(() => {
+            // Service worker registration failed - app continues to work
+          });
+        });
+      }
+
+      renderDoneList();
+    })();
+  </script>
+</body>
+</html>

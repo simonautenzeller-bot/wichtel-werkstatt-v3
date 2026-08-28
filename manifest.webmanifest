@@ -1,0 +1,25 @@
+{
+  "name": "Die Wichtel-Maschine",
+  "short_name": "Wichtel-o-mat",
+  "description": "Die digitale Wichtelauslosung der Aubenziller Wichtel Werkstatt.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1b4f35",
+  "theme_color": "#1f7a42",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
