@@ -1,4 +1,4 @@
-const CACHE_NAME = "wichtel-o-mat-app-v1";
+const CACHE_NAME = "wichtel-o-mat-app-v2";
 const APP_FILES = [
   "./",
   "./index.html",

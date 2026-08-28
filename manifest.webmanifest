@@ -1,6 +1,6 @@
 {
-  "name": "Die Wichtel-Maschine",
-  "short_name": "Wichtel-o-mat",
+  "name": "Wichtel",
+  "short_name": "Wichtel",
   "description": "Die digitale Wichtelauslosung der Aubenziller Wichtel Werkstatt.",
   "lang": "de",
   "start_url": "./",
