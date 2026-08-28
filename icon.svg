@@ -4,7 +4,4 @@
   <path d="M256 52c-92 66-145 156-145 234h290C401 208 348 118 256 52Z" fill="#b3303e"/>
   <circle cx="256" cy="56" r="24" fill="#f8fff9"/>
   <path d="M140 326c13 86 62 138 116 138s103-52 116-138c-39 30-78 43-116 43s-77-13-116-43Z" fill="#f8fff9"/>
-  <circle cx="218" cy="264" r="12" fill="#163e2a"/>
-  <circle cx="294" cy="264" r="12" fill="#163e2a"/>
-  <path d="M232 306c14 12 34 12 48 0" fill="none" stroke="#a85a4a" stroke-linecap="round" stroke-width="10"/>
 </svg>
