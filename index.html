@@ -979,6 +979,38 @@
       justify-content: center;
     }
 
+    .final-save {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: end;
+      margin-top: 16px;
+      text-align: left;
+    }
+
+    .final-save label {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .final-save input {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid #a8cdaf;
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: #ffffff;
+      color: var(--ink);
+      font: inherit;
+    }
+
+    html.alt-green-view #screenFinal .final-save label {
+      color: #f1fff5;
+    }
+
     .final-bg-fall {
       display: none;
       position: fixed;
@@ -1432,6 +1464,13 @@
           <p class="step-kicker">Fertig</p>
           <h2 class="step-title"><span class="xmas-icon" aria-hidden="true">⭐</span>Ihr seid bereit fürs Wichteln</h2>
           <p class="step-sub">Alle Namen sind verteilt. Frohe Weihnachten.</p>
+          <div class="final-save">
+            <label for="savedDrawingNameInput">Auslosung speichern
+              <input id="savedDrawingNameInput" type="text" maxlength="80" placeholder="z. B. Auslosung Weihnachten 2026">
+            </label>
+            <button id="saveDrawingBtn" class="btn-primary" type="button">Speichern</button>
+          </div>
+          <p id="finalSaveStatus" class="status"></p>
           <div class="btn-row" style="margin-top:12px;">
             <button id="restartBtn" class="btn-secondary" type="button">Neue Runde starten</button>
           </div>
@@ -1521,15 +1560,6 @@
             <span class="dev-section-arrow" aria-hidden="true">▾</span>
           </summary>
           <div class="dev-section-body">
-            <div class="dev-grid">
-              <div>
-                <label for="savedDrawingNameInput">Name der aktuellen Auslosung</label>
-                <input id="savedDrawingNameInput" type="text" maxlength="80" placeholder="z. B. Auslosung Weihnachten 2026">
-              </div>
-            </div>
-            <div class="dev-inline-actions">
-              <button id="saveDrawingBtn" class="btn-primary" type="button">Auslosung speichern</button>
-            </div>
             <ul id="savedDrawingList" class="dev-pair-list" aria-label="Gespeicherte Auslosungen"></ul>
           </div>
         </details>
@@ -1605,6 +1635,7 @@
       const resetDevSettingsBtn = document.getElementById("resetDevSettingsBtn");
       const closeDevBtn = document.getElementById("closeDevBtn");
       const devSettingsStatus = document.getElementById("devSettingsStatus");
+      const finalSaveStatus = document.getElementById("finalSaveStatus");
       init();
 
       function init() {
@@ -1939,11 +1970,13 @@
 
         if (!name) {
           setStatus(devSettingsStatus, "Bitte einen Namen für die Auslosung vergeben.", "warn");
+          setStatus(finalSaveStatus, "Bitte einen Namen für die Auslosung vergeben.", "warn");
           return;
         }
 
         if (!state.lastCompletedAssignments.length) {
           setStatus(devSettingsStatus, "Bitte zuerst eine Auslosung starten.", "warn");
+          setStatus(finalSaveStatus, "Bitte zuerst eine Auslosung starten.", "warn");
           return;
         }
 
@@ -1957,6 +1990,7 @@
         savedDrawingNameInput.value = "";
         renderSavedDrawings();
         setStatus(devSettingsStatus, '"' + name + '" wurde gespeichert.', "ok");
+        setStatus(finalSaveStatus, '"' + name + '" wurde gespeichert.', "ok");
       }
 
       function getEffectivePeople() {
