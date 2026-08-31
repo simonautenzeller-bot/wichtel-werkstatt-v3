@@ -1502,9 +1502,9 @@
           </div>
         </details>
 
-        <details class="dev-section dev-accordion">
+        <details id="drawingResultSection" class="dev-section dev-accordion">
           <summary class="dev-section-toggle">
-            <span class="dev-section-title">Letzte Auslosung</span>
+            <span class="dev-section-title">Auslosung anzeigen</span>
             <span class="dev-section-arrow" aria-hidden="true">▾</span>
           </summary>
           <div class="dev-section-body">
@@ -1610,7 +1610,6 @@
       function init() {
         renderPersonButtons();
 
-        setupDevAccordion();
         themeModeSelect.addEventListener("change", handleThemeModeChange);
         drawBtn.addEventListener("click", handleDraw);
         globalRestartBtn.addEventListener("click", handleReset);
@@ -1627,24 +1626,6 @@
         loadDevPanelValues();
         renderSavedDrawings();
         updateProgressUI();
-      }
-
-      function setupDevAccordion() {
-        const sections = Array.from(devPanel.querySelectorAll(".dev-accordion"));
-
-        for (const section of sections) {
-          section.addEventListener("toggle", () => {
-            if (!section.open) {
-              return;
-            }
-
-            for (const other of sections) {
-              if (other !== section) {
-                other.open = false;
-              }
-            }
-          });
-        }
       }
 
       function handleThemeModeChange() {
@@ -1936,6 +1917,7 @@
           showButton.addEventListener("click", () => {
             state.lastCompletedAssignments = drawing.assignments;
             updateDevPairList();
+            drawingResultSection.open = true;
             setStatus(devSettingsStatus, '"' + drawing.name + '" wird angezeigt.', "ok");
           });
           const deleteButton = document.createElement("button");
