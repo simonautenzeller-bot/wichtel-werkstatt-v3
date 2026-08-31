@@ -1321,10 +1321,25 @@
       box-shadow: 0 3px 10px rgba(15, 62, 39, 0.18);
     }
 
+    .hero-home-button {
+      display: inline-flex;
+      flex: 0 0 auto;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .hero-home-button:focus-visible {
+      border-radius: 11px;
+      outline: 2px solid #ffffff;
+      outline-offset: 3px;
+    }
+
     .hero-title-row {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 24px;
     }
 
     .subtitle {
@@ -1387,7 +1402,7 @@
         </div>
         <div class="hero-top">
           <h1>
-            <span class="hero-title-row"><img class="hero-app-icon" src="./icon-192.png" alt=""><span>Die Wichtel-Maschine</span></span>
+            <span class="hero-title-row"><button id="homeBtn" class="hero-home-button" type="button" aria-label="Startseite anzeigen" title="Startseite"><img class="hero-app-icon" src="./icon-192.png" alt=""></button><span>Die Wichtel-Maschine</span></span>
           </h1>
         </div>
         <div class="hero-utility">
@@ -1610,6 +1625,7 @@
       const drawBtn = document.getElementById("drawBtn");
       const themeModeSelect = document.getElementById("themeModeSelect");
       const globalRestartBtn = document.getElementById("globalRestartBtn");
+      const homeBtn = document.getElementById("homeBtn");
       const nextBtn = document.getElementById("nextBtn");
       const continueBtn = document.getElementById("continueBtn");
       const restartBtn = document.getElementById("restartBtn");
@@ -1644,6 +1660,7 @@
         themeModeSelect.addEventListener("change", handleThemeModeChange);
         drawBtn.addEventListener("click", handleDraw);
         globalRestartBtn.addEventListener("click", handleReset);
+        homeBtn.addEventListener("click", handleShowStart);
         nextBtn.addEventListener("click", handleNextPerson);
         continueBtn.addEventListener("click", handleContinue);
         restartBtn.addEventListener("click", handleReset);
@@ -1695,6 +1712,12 @@
         hideDevPanel();
         hideSecret();
         showScreen("final");
+      }
+
+      function handleShowStart() {
+        hideDevPanel();
+        hideSecret();
+        showScreen("start");
       }
 
       function handleShowDev(event) {
