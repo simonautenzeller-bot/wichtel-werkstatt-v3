@@ -1292,7 +1292,7 @@
     .hero-title-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 16px;
     }
 
     .subtitle {
@@ -1357,6 +1357,9 @@
           <h1>
             <span class="hero-title-row"><img class="hero-app-icon" src="./icon-192.png" alt=""><span>Die Wichtel-Maschine</span></span>
           </h1>
+        </div>
+        <div class="hero-utility">
+          <button id="globalRestartBtn" class="global-restart" type="button"><span aria-hidden="true">↺</span> Neue Runde starten</button>
         </div>
       </header>
 
@@ -1576,6 +1579,7 @@
       const personGrid = document.getElementById("personGrid");
       const drawBtn = document.getElementById("drawBtn");
       const themeModeSelect = document.getElementById("themeModeSelect");
+      const globalRestartBtn = document.getElementById("globalRestartBtn");
       const nextBtn = document.getElementById("nextBtn");
       const continueBtn = document.getElementById("continueBtn");
       const restartBtn = document.getElementById("restartBtn");
@@ -1609,6 +1613,7 @@
         setupDevAccordion();
         themeModeSelect.addEventListener("change", handleThemeModeChange);
         drawBtn.addEventListener("click", handleDraw);
+        globalRestartBtn.addEventListener("click", handleReset);
         nextBtn.addEventListener("click", handleNextPerson);
         continueBtn.addEventListener("click", handleContinue);
         restartBtn.addEventListener("click", handleReset);
