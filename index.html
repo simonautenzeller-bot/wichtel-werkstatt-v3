@@ -206,16 +206,20 @@
       gap: 14px;
     }
 
-    .dev-grid textarea {
+    .dev-grid textarea,
+    .dev-grid input {
       width: 100%;
-      min-height: 120px;
       border: 1px solid #a8cdaf;
       border-radius: 10px;
       padding: 10px 12px;
       background: white;
       color: var(--ink);
-      resize: vertical;
       font: inherit;
+    }
+
+    .dev-grid textarea {
+      min-height: 120px;
+      resize: vertical;
     }
 
     .dev-actions {
@@ -1354,21 +1358,14 @@
             <span class="hero-title-row"><img class="hero-app-icon" src="./icon-192.png" alt=""><span>Die Wichtel-Maschine</span></span>
           </h1>
         </div>
-      <p class="subtitle">Wir wichteln gemeinsam. Die <strong>Wichtel-Maschine</strong> übernimmt die Auslosung direkt auf dem Handy. Jede Person sieht nur ihren eigenen Wichtel.</p>
-      <div class="hero-utility">
-        <button id="globalRestartBtn" class="global-restart" type="button"><span aria-hidden="true">↺</span> Neue Runde starten</button>
-      </div>
-    </header>
+      </header>
 
     <section class="content">
       <section id="screenStart" class="screen active">
         <article class="card">
           <p class="step-kicker">Schritt 1</p>
           <h2 class="step-title"><span class="xmas-icon" aria-hidden="true">🎁</span>Neue Auslosung starten</h2>
-          <div class="setup-meta" aria-label="Gruppeninfo">
-            <p id="startPeopleList"><strong>Teilnehmende:</strong> </p>
-            <p id="startBlockedPairsList"><strong>Nicht erlaubt:</strong> </p>
-          </div>
+          <p class="step-sub">Wir wichteln gemeinsam. Die <strong>Wichtel-Maschine</strong> übernimmt die Auslosung direkt auf dem Handy. Jede Person sieht nur ihren eigenen Wichtel.</p>
           <div class="btn-row">
             <button id="drawBtn" class="btn-primary" type="button">Auslosung starten</button>
           </div>
@@ -1514,6 +1511,25 @@
             <p id="devSettingsStatus" class="status"></p>
           </div>
         </details>
+
+        <details class="dev-section dev-accordion">
+          <summary class="dev-section-toggle">
+            <span class="dev-section-title">Gespeicherte Auslosungen</span>
+            <span class="dev-section-arrow" aria-hidden="true">▾</span>
+          </summary>
+          <div class="dev-section-body">
+            <div class="dev-grid">
+              <div>
+                <label for="savedDrawingNameInput">Name der aktuellen Auslosung</label>
+                <input id="savedDrawingNameInput" type="text" maxlength="80" placeholder="z. B. Auslosung Weihnachten 2026">
+              </div>
+            </div>
+            <div class="dev-inline-actions">
+              <button id="saveDrawingBtn" class="btn-primary" type="button">Auslosung speichern</button>
+            </div>
+            <ul id="savedDrawingList" class="dev-pair-list" aria-label="Gespeicherte Auslosungen"></ul>
+          </div>
+        </details>
       </div>
     </div>
   </div>
@@ -1536,6 +1552,7 @@
       ];
 
       const STORAGE_KEY = "Die Wichtel-Maschine-settings-v1";
+      const SAVED_DRAWINGS_KEY = "Die Wichtel-Maschine-saved-drawings-v1";
       const INVERT_VIEW_KEY = "Die Wichtel-Maschine-invert-view-v1";
       const THEME_MODE_KEY = "Die Wichtel-Maschine-theme-mode-v1";
 
@@ -1559,7 +1576,6 @@
       const personGrid = document.getElementById("personGrid");
       const drawBtn = document.getElementById("drawBtn");
       const themeModeSelect = document.getElementById("themeModeSelect");
-      const globalRestartBtn = document.getElementById("globalRestartBtn");
       const nextBtn = document.getElementById("nextBtn");
       const continueBtn = document.getElementById("continueBtn");
       const restartBtn = document.getElementById("restartBtn");
@@ -1572,15 +1588,16 @@
       const remainingText = document.getElementById("remainingText");
       const progressText = document.getElementById("progressText");
       const progressFill = document.getElementById("progressFill");
-      const startPeopleList = document.getElementById("startPeopleList");
-      const startBlockedPairsList = document.getElementById("startBlockedPairsList");
       const showFinalBtn = document.getElementById("showFinalBtn");
       const showDevLink = document.getElementById("showDevLink");
       const devPanel = document.getElementById("devPanel");
       const devPeopleInput = document.getElementById("devPeopleInput");
       const devBlockedInput = document.getElementById("devBlockedInput");
       const devPairList = document.getElementById("devPairList");
+      const savedDrawingNameInput = document.getElementById("savedDrawingNameInput");
+      const savedDrawingList = document.getElementById("savedDrawingList");
       const saveDevSettingsBtn = document.getElementById("saveDevSettingsBtn");
+      const saveDrawingBtn = document.getElementById("saveDrawingBtn");
       const resetDevSettingsBtn = document.getElementById("resetDevSettingsBtn");
       const closeDevBtn = document.getElementById("closeDevBtn");
       const devSettingsStatus = document.getElementById("devSettingsStatus");
@@ -1592,18 +1609,18 @@
         setupDevAccordion();
         themeModeSelect.addEventListener("change", handleThemeModeChange);
         drawBtn.addEventListener("click", handleDraw);
-        globalRestartBtn.addEventListener("click", handleReset);
         nextBtn.addEventListener("click", handleNextPerson);
         continueBtn.addEventListener("click", handleContinue);
         restartBtn.addEventListener("click", handleReset);
         showFinalBtn.addEventListener("click", handleShowFinal);
         showDevLink.addEventListener("click", handleShowDev);
         saveDevSettingsBtn.addEventListener("click", handleSaveDevSettings);
+        saveDrawingBtn.addEventListener("click", handleSaveDrawing);
         resetDevSettingsBtn.addEventListener("click", handleResetDevSettings);
         closeDevBtn.addEventListener("click", () => hideDevPanel());
         applyStoredThemeMode();
         loadDevPanelValues();
-        updateStartScreenMeta();
+        renderSavedDrawings();
         updateProgressUI();
       }
 
@@ -1667,6 +1684,7 @@
         event.preventDefault();
         loadDevPanelValues();
         updateDevPairList();
+        renderSavedDrawings();
         devPanel.hidden = false;
       }
 
@@ -1876,6 +1894,84 @@
         }
       }
 
+      function loadSavedDrawings() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(SAVED_DRAWINGS_KEY));
+          return Array.isArray(saved) ? saved : [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function saveSavedDrawings(drawings) {
+        localStorage.setItem(SAVED_DRAWINGS_KEY, JSON.stringify(drawings));
+      }
+
+      function renderSavedDrawings() {
+        savedDrawingList.innerHTML = "";
+        const drawings = loadSavedDrawings();
+
+        if (!drawings.length) {
+          const item = document.createElement("li");
+          item.textContent = "Noch keine Auslosung gespeichert.";
+          savedDrawingList.appendChild(item);
+          return;
+        }
+
+        for (const drawing of drawings) {
+          const item = document.createElement("li");
+          const name = document.createElement("strong");
+          name.textContent = drawing.name;
+          const actions = document.createElement("span");
+          actions.className = "dev-inline-actions";
+          const showButton = document.createElement("button");
+          showButton.type = "button";
+          showButton.className = "btn-secondary";
+          showButton.textContent = "Anzeigen";
+          showButton.addEventListener("click", () => {
+            state.lastCompletedAssignments = drawing.assignments;
+            updateDevPairList();
+            setStatus(devSettingsStatus, '"' + drawing.name + '" wird angezeigt.', "ok");
+          });
+          const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
+          deleteButton.className = "btn-soft-danger";
+          deleteButton.textContent = "Löschen";
+          deleteButton.addEventListener("click", () => {
+            saveSavedDrawings(loadSavedDrawings().filter((saved) => saved.id !== drawing.id));
+            renderSavedDrawings();
+          });
+          actions.append(showButton, deleteButton);
+          item.append(name, actions);
+          savedDrawingList.appendChild(item);
+        }
+      }
+
+      function handleSaveDrawing() {
+        const name = normalizeName(savedDrawingNameInput.value);
+
+        if (!name) {
+          setStatus(devSettingsStatus, "Bitte einen Namen für die Auslosung vergeben.", "warn");
+          return;
+        }
+
+        if (!state.lastCompletedAssignments.length) {
+          setStatus(devSettingsStatus, "Bitte zuerst eine Auslosung starten.", "warn");
+          return;
+        }
+
+        const drawings = loadSavedDrawings();
+        drawings.unshift({
+          id: Date.now().toString(),
+          name,
+          assignments: state.lastCompletedAssignments
+        });
+        saveSavedDrawings(drawings);
+        savedDrawingNameInput.value = "";
+        renderSavedDrawings();
+        setStatus(devSettingsStatus, '"' + name + '" wurde gespeichert.', "ok");
+      }
+
       function getEffectivePeople() {
         const active = people.length ? people : [...defaultPeople];
         return active.map(normalizeName).filter(Boolean);
@@ -1893,18 +1989,6 @@
       function loadDevPanelValues() {
         devPeopleInput.value = people.join("\n");
         devBlockedInput.value = [...blockedPairs].map((pair) => pair.replace("::", " | ")).join("\n");
-      }
-
-      function updateStartScreenMeta() {
-        const activePeople = getEffectivePeople();
-        const activeBlocked = getEffectiveBlockedPairs();
-        const peopleText = activePeople.length ? activePeople.join(", ") : "Keine Teilnehmenden";
-        const blockedText = activeBlocked.length
-          ? activeBlocked.map((pair) => pair.split("::").join(" ↔ ")).join(", ")
-          : "Keine";
-
-        startPeopleList.innerHTML = "<strong>Teilnehmende:</strong> " + peopleText;
-        startBlockedPairsList.innerHTML = "<strong>Nicht erlaubt:</strong> " + blockedText;
       }
 
       function handleSaveDevSettings() {
@@ -1926,7 +2010,6 @@
         state.lastCompletedAssignments = [];
         hideSecret();
         renderPersonButtons();
-        updateStartScreenMeta();
         updateDevPairList();
         setStatus(drawStatus, "Einstellungen gespeichert. Die neue Konfiguration ist aktiv.", "ok");
         setStatus(revealStatus, "", "");
@@ -1946,7 +2029,6 @@
         state.lastCompletedAssignments = [];
         hideSecret();
         renderPersonButtons();
-        updateStartScreenMeta();
         updateDevPairList();
         setStatus(drawStatus, "Standard-Einstellungen wurden wiederhergestellt.", "ok");
         setStatus(revealStatus, "", "");
