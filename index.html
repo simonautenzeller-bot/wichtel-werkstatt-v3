@@ -979,6 +979,84 @@
       justify-content: center;
     }
 
+    .config-grid {
+      display: grid;
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .config-grid textarea {
+      width: 100%;
+      min-height: 110px;
+      border: 1px solid #a8cdaf;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #ffffff;
+      color: var(--ink);
+      resize: vertical;
+      font: inherit;
+    }
+
+    .saved-group-list {
+      list-style: none;
+      margin: 10px 0 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .saved-group-list li {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid #c9ddce;
+      border-radius: 12px;
+      background: #f7fbf8;
+    }
+
+    .saved-group-info {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .saved-group-info strong {
+      font-family: var(--font-display);
+    }
+
+    .saved-group-info span {
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .saved-group-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .saved-group-actions button {
+      min-height: 32px;
+      padding: 5px 10px;
+      font-size: 0.82rem;
+    }
+
+    html.alt-green-view .config-grid label {
+      color: #e9f8ed;
+    }
+
+    html.alt-green-view .saved-group-list li {
+      background: #24573c;
+      border-color: #4f8f69;
+      color: #eefbf1;
+    }
+
+    html.alt-green-view .saved-group-info span {
+      color: #d7eede;
+    }
+
     .final-save {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -1418,8 +1496,41 @@
           <p class="step-sub">Wir wichteln gemeinsam. Die <strong>Wichtel-Maschine</strong> übernimmt die Auslosung direkt auf dem Handy. Jede Person sieht nur ihren eigenen Wichtel.</p>
           <div class="btn-row">
             <button id="drawBtn" class="btn-primary" type="button">Auslosung starten</button>
+            <button id="configBtn" class="btn-secondary" type="button">Wichtelgruppe einrichten</button>
           </div>
           <p id="drawStatus" class="status"></p>
+        </article>
+      </section>
+
+      <section id="screenConfig" class="screen">
+        <article class="card">
+          <p class="step-kicker">Vorbereitung</p>
+          <h2 class="step-title"><span class="xmas-icon" aria-hidden="true">📝</span>Wichtelgruppe einrichten</h2>
+          <p class="step-sub">Trage die Teilnehmenden und die nicht erlaubten Paarungen ein. Unter einem Namen gespeichert kannst du die Gruppe jederzeit wieder laden.</p>
+
+          <div class="config-grid">
+            <div>
+              <label for="configPeopleInput">Teilnehmende (pro Zeile)</label>
+              <textarea id="configPeopleInput"></textarea>
+            </div>
+            <div>
+              <label for="configBlockedInput">Nicht erlaubt (eine Paarung pro Zeile, z. B. Anna | Ben)</label>
+              <textarea id="configBlockedInput"></textarea>
+            </div>
+            <div>
+              <label for="configNameInput">Name der Wichtelgruppe</label>
+              <input id="configNameInput" type="text" maxlength="80" placeholder="z. B. Auslosung Weihnachten 2026">
+            </div>
+          </div>
+
+          <div class="btn-row" style="margin-top:12px;">
+            <button id="saveGroupBtn" class="btn-primary" type="button">Gruppe speichern</button>
+            <button id="configBackBtn" class="btn-secondary" type="button">Zurück</button>
+          </div>
+          <p id="configStatus" class="status"></p>
+
+          <p class="step-kicker" style="margin-top:14px;">Gespeicherte Gruppen</p>
+          <ul id="savedGroupList" class="saved-group-list" aria-label="Gespeicherte Wichtelgruppen"></ul>
         </article>
       </section>
 
@@ -1601,6 +1712,7 @@
 
       const STORAGE_KEY = "Die Wichtel-Maschine-settings-v1";
       const SAVED_DRAWINGS_KEY = "Die Wichtel-Maschine-saved-drawings-v1";
+      const SAVED_GROUPS_KEY = "Die Wichtel-Maschine-saved-groups-v1";
       const INVERT_VIEW_KEY = "Die Wichtel-Maschine-invert-view-v1";
       const THEME_MODE_KEY = "Die Wichtel-Maschine-theme-mode-v1";
 
@@ -1616,6 +1728,7 @@
       };
 
       const screenStart = document.getElementById("screenStart");
+      const screenConfig = document.getElementById("screenConfig");
       const screenDraw = document.getElementById("screenDraw");
       const screenReveal = document.getElementById("screenReveal");
       const screenHandover = document.getElementById("screenHandover");
@@ -1623,6 +1736,14 @@
       const appRoot = document.querySelector(".app");
       const personGrid = document.getElementById("personGrid");
       const drawBtn = document.getElementById("drawBtn");
+      const configBtn = document.getElementById("configBtn");
+      const configPeopleInput = document.getElementById("configPeopleInput");
+      const configBlockedInput = document.getElementById("configBlockedInput");
+      const configNameInput = document.getElementById("configNameInput");
+      const saveGroupBtn = document.getElementById("saveGroupBtn");
+      const configBackBtn = document.getElementById("configBackBtn");
+      const configStatus = document.getElementById("configStatus");
+      const savedGroupList = document.getElementById("savedGroupList");
       const themeModeSelect = document.getElementById("themeModeSelect");
       const globalRestartBtn = document.getElementById("globalRestartBtn");
       const homeBtn = document.getElementById("homeBtn");
@@ -1659,6 +1780,9 @@
 
         themeModeSelect.addEventListener("change", handleThemeModeChange);
         drawBtn.addEventListener("click", handleDraw);
+        configBtn.addEventListener("click", handleShowConfig);
+        saveGroupBtn.addEventListener("click", handleSaveGroup);
+        configBackBtn.addEventListener("click", handleShowStart);
         globalRestartBtn.addEventListener("click", handleReset);
         homeBtn.addEventListener("click", handleShowStart);
         nextBtn.addEventListener("click", handleNextPerson);
@@ -1673,6 +1797,7 @@
         applyStoredThemeMode();
         loadDevPanelValues();
         renderSavedDrawings();
+        renderSavedGroups();
         updateProgressUI();
       }
 
@@ -1934,6 +2059,130 @@
         }
       }
 
+      function handleShowConfig() {
+        configPeopleInput.value = getEffectivePeople().join("\n");
+        configBlockedInput.value = getEffectiveBlockedPairs().map((pair) => pair.split("::").join(" | ")).join("\n");
+        configNameInput.value = "";
+        setStatus(configStatus, "", "");
+        renderSavedGroups();
+        showScreen("config");
+      }
+
+      function loadSavedGroups() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(SAVED_GROUPS_KEY));
+          return Array.isArray(saved) ? saved : [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function saveSavedGroups(groups) {
+        localStorage.setItem(SAVED_GROUPS_KEY, JSON.stringify(groups));
+      }
+
+      function applyGroup(groupPeople, groupBlockedPairs) {
+        people = [...groupPeople];
+        blockedPairs = new Set(groupBlockedPairs);
+        saveSettingsToStorage();
+
+        state.assignments = null;
+        state.shown.clear();
+        state.lastViewedPerson = "";
+        state.lastCompletedAssignments = [];
+
+        hideSecret();
+        renderPersonButtons();
+        loadDevPanelValues();
+        updateDevPairList();
+        updateProgressUI();
+        updateNextBtnLabel();
+      }
+
+      function handleSaveGroup() {
+        const name = normalizeName(configNameInput.value);
+        const parsedPeople = parsePeopleInput(configPeopleInput.value);
+        const parsedBlockedPairs = parseBlockedPairsInput(configBlockedInput.value);
+
+        if (!name) {
+          setStatus(configStatus, "Bitte einen Namen für die Wichtelgruppe vergeben.", "warn");
+          return;
+        }
+
+        if (parsedPeople.length < 2) {
+          setStatus(configStatus, "Bitte mindestens zwei Teilnehmende eintragen.", "warn");
+          return;
+        }
+
+        const groups = loadSavedGroups().filter((group) => group.name !== name);
+        groups.unshift({
+          id: Date.now().toString(),
+          name,
+          people: parsedPeople,
+          blockedPairs: parsedBlockedPairs
+        });
+        saveSavedGroups(groups);
+
+        applyGroup(parsedPeople, parsedBlockedPairs);
+        renderSavedGroups();
+        setStatus(configStatus, '"' + name + '" wurde gespeichert und ist jetzt aktiv.', "ok");
+        setStatus(drawStatus, '"' + name + '" ist aktiv. Ihr könnt die Auslosung starten.', "ok");
+      }
+
+      function renderSavedGroups() {
+        savedGroupList.innerHTML = "";
+        const groups = loadSavedGroups();
+
+        if (!groups.length) {
+          const item = document.createElement("li");
+          item.textContent = "Noch keine Wichtelgruppe gespeichert.";
+          savedGroupList.appendChild(item);
+          return;
+        }
+
+        for (const group of groups) {
+          const item = document.createElement("li");
+
+          const info = document.createElement("span");
+          info.className = "saved-group-info";
+          const name = document.createElement("strong");
+          name.textContent = group.name;
+          const meta = document.createElement("span");
+          meta.textContent = group.people.length + " Teilnehmende, " + group.blockedPairs.length + " gesperrte Paarungen";
+          info.append(name, meta);
+
+          const actions = document.createElement("span");
+          actions.className = "saved-group-actions";
+
+          const loadButton = document.createElement("button");
+          loadButton.type = "button";
+          loadButton.className = "btn-secondary";
+          loadButton.textContent = "Laden";
+          loadButton.addEventListener("click", () => {
+            applyGroup(group.people, group.blockedPairs);
+            configPeopleInput.value = group.people.join("\n");
+            configBlockedInput.value = group.blockedPairs.map((pair) => pair.split("::").join(" | ")).join("\n");
+            configNameInput.value = group.name;
+            setStatus(configStatus, '"' + group.name + '" ist jetzt aktiv.', "ok");
+            setStatus(drawStatus, '"' + group.name + '" ist aktiv. Ihr könnt die Auslosung starten.', "ok");
+          });
+
+          const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
+          deleteButton.className = "btn-tertiary";
+          deleteButton.textContent = "Löschen";
+          deleteButton.addEventListener("click", () => {
+            saveSavedGroups(loadSavedGroups().filter((saved) => saved.id !== group.id));
+            renderSavedGroups();
+            setStatus(configStatus, '"' + group.name + '" wurde gelöscht.', "ok");
+          });
+
+          actions.append(loadButton, deleteButton);
+          item.append(info, actions);
+          savedGroupList.appendChild(item);
+        }
+      }
+
       function loadSavedDrawings() {
         try {
           const saved = JSON.parse(localStorage.getItem(SAVED_DRAWINGS_KEY));
@@ -2145,6 +2394,7 @@
 
       function showScreen(screen) {
         screenStart.classList.remove("active");
+        screenConfig.classList.remove("active");
         screenDraw.classList.remove("active");
         screenReveal.classList.remove("active");
         screenHandover.classList.remove("active");
@@ -2153,6 +2403,11 @@
 
         if (screen === "start") {
           screenStart.classList.add("active");
+          return;
+        }
+
+        if (screen === "config") {
+          screenConfig.classList.add("active");
           return;
         }
 
